@@ -1,0 +1,105 @@
+$dcaf-current-stage: 0% !default;
+$dcaf-animation-time: 1s !default;
+$dcaf-saved-stage: 0% !default;
+$dcaf-saved-states: () !default;
+
+
+// Helpers
+/* Strip unit from value (2s -> 2, 2px -> 2 etc.) */
+@function strip-units($number) {
+  @return $number / ($number * 0 + 1);
+}
+
+/* Convert time (s/ms) to percentage of animation total time */
+@function time-to-percent($time) {
+  @return strip-units($time / $dcaf-animation-time) * 100%;
+}
+
+/* Get current time (as the % of total time) */
+@function get-time() {
+  @return $dcaf-current-stage;
+}
+
+/* Function to set current time (returns current time as the % of total time) */
+@function set-current($time) {
+  @if $time != strip-units($time) * 1% {
+    $time: time-to-percent($time);
+  }
+  $dcaf-current-stage: $time !global;
+  @return $dcaf-current-stage;
+}
+
+/* Function to update the current time by the time given in parameter (returns current time as the % of total time) */
+@function update-current($time) {
+  @if $time != strip-units($time) * 1% {
+    $time: time-to-percent($time);
+  }
+  $dcaf-current-stage: $dcaf-current-stage + $time !global;
+  @return $dcaf-current-stage;
+}
+
+/* Alias to set-current, to be used as a mixin */
+@mixin set-time($time) {
+  $void: set-current($time);
+}
+
+/* Save the current time under the label given in parameter */
+@mixin save-time($name) {
+  $dcaf-saved-states: map-merge($dcaf-saved-states, ($name: $dcaf-current-stage)) !global;
+}
+
+/* Restores the time saved with given label (gets back to it) */
+@mixin restore-time($name) {
+  @if map-has-key($dcaf-saved-states, $name) {
+    $dcaf-current-stage: map-get($dcaf-saved-states, $name) !global;
+  }
+}
+
+/* Create the next frame $time after previous one and keep it $keep long (true will keep till the end of animation) */
+@mixin frame-after($time: 0s, $keep: false) {
+  $dcaf-animation-time: update-current($time);
+
+  #{$dcaf-animation-time} {
+    @content;
+  }
+
+  @if $keep == true {
+    100% {
+      @content
+    }
+  }
+  @else if $keep != false {
+    $dcaf-animation-time: update-current($keep);
+
+    #{$dcaf-animation-time} {
+      @content;
+    }
+  }
+}
+
+/* Create the frame at $time (without changing the queue time) and keep it $keep long (true to keep till the end) */
+@mixin frame-at($time, $keep: false) {
+  @if $time == strip-units($time) * 1% {
+    #{$time} {
+      @content;
+    }
+  }
+  @else {
+    #{time-to-percent($time)} {
+      @content;
+    }
+  }
+
+  @if $keep == true {
+    100% {
+      @content
+    }
+  }
+  @else if $keep != false {
+    $dcaf-animation-time: update-current($keep);
+
+    #{$dcaf-animation-time} {
+      @content;
+    }
+  }
+}
