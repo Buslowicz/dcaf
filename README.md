@@ -6,7 +6,7 @@ DCAF is a CSS animation framework for more complex (though non-interactive) anim
 It allows to use the queue of frames based on time instead of seconds (still supporting the % though). It is relatively 
 easy to use, here is an example:
 
-```
+```css
 @keyframes element1 {
   @include set-time(0s);
 
