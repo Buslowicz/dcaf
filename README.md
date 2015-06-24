@@ -1,5 +1,4 @@
 # DCAF
----
 
 **D**CAF **C**SS **A**nimation **F**ramework
 
